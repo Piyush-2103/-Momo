@@ -79,7 +79,7 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
  </header>
 
  <section class="card" aria-labelledby="fh">
-  <h2 id="fh">Rate your momos</h2>
+  <h2 id="fh">Rate our momos</h2>
   <form id="f" novalidate>
    <div class="lbl" id="rl">Your rating</div>
    <div class="stars" id="stars" role="radiogroup" aria-labelledby="rl"></div>
@@ -220,7 +220,7 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
  reviews=sortNew(lsLoad().map(clean).filter(Boolean));render();
 
  /* shared database: Firebase Realtime Database over plain REST (no sign-in, no SDK) */
- var DB_URL=''; /* <-- paste your Firebase Realtime Database URL here, e.g. https://your-project-default-rtdb.firebaseio.com */
+ var DB_URL='https://gali-momo-default-rtdb.firebaseio.com/'; /* <-- paste your Firebase Realtime Database URL here, e.g. https://your-project-default-rtdb.firebaseio.com */
  DB_URL=DB_URL.trim().replace(/\/+$/,'');
  function fetchRemote(){
   return fetch(DB_URL+'/reviews.json?orderBy=%22createdAt%22&limitToLast=200').then(function(r){
