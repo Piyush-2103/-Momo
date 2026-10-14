@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>गली Momo – Rate Our Momos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Kaushan+Script&family=Montserrat:wght@500;700&family=Yatra+One&display=swap" rel="stylesheet">
+<style>
+:root{--text:#c0c9ca;--brown:#472a11;--gold:#dca843;--card:#3a220d;--line:rgba(192,201,202,.18);
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--gold);color:var(--text);font-family:'Montserrat',system-ui,sans-serif;line-height:1.5;min-height:100vh;position:relative;overflow-x:hidden}
+.blob{position:absolute;background:var(--brown);z-index:0}
+.b1{inset:6% -12% auto -12%;height:94%;border-radius:38% 62% 45% 55%/12% 10% 6% 8%}
+main{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:28px 18px 48px}
+header{text-align:center;padding-top:8px}
+.tag{display:inline-block;background:var(--gold);color:var(--brown);font-family:'Kaushan Script',cursive;padding:2px 16px;border-radius:30px 14px 30px 14px;transform:rotate(-3deg);font-size:1.1rem;margin-bottom:6px}
+h1{margin:0;font-family:'Yatra One','Mukta',serif;font-weight:400;font-size:clamp(4.5rem,22vw,7.5rem);line-height:1;color:var(--text);text-shadow:4px 4px 0 rgba(0,0,0,.28)}
+.momo{font-family:'Archivo Black',sans-serif;font-size:clamp(2.6rem,13vw,4.4rem);letter-spacing:.04em;line-height:1;margin-top:-4px}
+.sub{font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 0;font-size:clamp(.85rem,3.4vw,1.05rem)}
+.card{background:var(--card);border:2px solid var(--gold);border-radius:28px 12px 28px 12px;padding:22px 20px;margin-top:24px}
+h2{font-family:'Kaushan Script',cursive;font-weight:400;color:var(--gold);font-size:1.7rem;margin:0 0 14px}
+label,.lbl{display:block;font-weight:700;font-size:.9rem;margin:16px 0 6px}
+.opt{font-weight:500;opacity:.7}
+.stars{display:flex;gap:6px}
+.star{background:none;border:0;padding:2px;cursor:pointer;color:rgba(192,201,202,.35);font-size:2.6rem;line-height:1;transition:transform .12s,color .12s;-webkit-tap-highlight-color:transparent}
+.star.on{color:var(--gold)}
+.star:hover{transform:scale(1.12)}
+.star:focus-visible,button.primary:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.rtext{min-height:1.4em;margin-top:2px;font-family:'Kaushan Script',cursive;font-size:1.2rem;color:var(--gold)}
+input,textarea{width:100%;background:var(--brown);color:var(--text);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:1rem}
+input::placeholder,textarea::placeholder{color:rgba(192,201,202,.55)}
+textarea{min-height:110px;resize:vertical}
+.count{text-align:right;font-size:.75rem;opacity:.7;margin-top:4px}
+.err{color:#ffb4a2;font-size:.85rem;min-height:1.2em;margin-top:6px}
+button.primary{margin-top:14px;width:100%;background:var(--gold);color:var(--brown);border:0;border-radius:40px;padding:14px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer;transition:transform .12s,opacity .12s}
+button.primary:hover{transform:translateY(-1px)}
+button.primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.ok{background:rgba(220,168,67,.15);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;margin-top:14px;font-weight:700}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.avg{text-align:center}
+.avg b{display:block;font-family:'Archivo Black',sans-serif;font-size:3rem;line-height:1;color:var(--gold)}
+.avg .st{color:var(--gold);letter-spacing:2px;font-size:1rem}
+.avg small{opacity:.75}
+.bars{display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:22px 1fr 26px;align-items:center;gap:8px;font-size:.8rem}
+.track{height:8px;background:var(--brown);border-radius:8px;overflow:hidden}
+.fill{height:100%;background:var(--gold);border-radius:8px;transition:width .4s}
+.list{display:grid;gap:12px;margin-top:18px}
+.rev{background:var(--brown);border:1px solid var(--line);border-radius:16px;padding:14px 16px;overflow-wrap:anywhere}
+.rev .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rev .nm{font-weight:700}
+.rev .rs{color:var(--gold);letter-spacing:2px}
+.rev p{margin:6px 0 0;white-space:pre-wrap}
+.rev time{font-size:.75rem;opacity:.65}
+.empty{text-align:center;opacity:.8;padding:18px 0 4px}
+.note{font-size:.78rem;opacity:.7;text-align:center;margin-top:14px}
+footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:var(--brown)}
+@media(max-width:420px){.sum{grid-template-columns:1fr}.star{font-size:2.3rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blob b1" aria-hidden="true"></div>
+<main>
+ <header>
+  <h1>गली</h1>
+  <div class="momo">MOMO</div>
+  <p class="sub">How was the authentic flavour?</p>
+ </header>
+
+ <section class="card" aria-labelledby="fh">
+  <h2 id="fh">Rate your momos</h2>
+  <form id="f" novalidate>
+   <div class="lbl" id="rl">Your rating</div>
+   <div class="stars" id="stars" role="radiogroup" aria-labelledby="rl"></div>
+   <div class="rtext" id="rtext" aria-live="polite"></div>
+   <div class="err" id="rerr" role="alert"></div>
+
+   <label for="name">Name <span class="opt">(optional – leave blank to stay anonymous)</span></label>
+   <input id="name" maxlength="40" autocomplete="given-name" placeholder="Anonymous">
+
+   <label for="cm">Comment <span class="opt">(optional)</span></label>
+   <textarea id="cm" maxlength="300" placeholder="Tell us what you loved – veg, paneer, no-onion…"></textarea>
+   <div class="count"><span id="cc">0</span>/300</div>
+
+   <button class="primary" id="sub" type="submit">Submit review</button>
+   <div id="msg" aria-live="polite"></div>
+  </form>
+ </section>
+
+ <section class="card" aria-labelledby="rh">
+  <h2 id="rh">What everyone says</h2>
+  <div class="sum" id="sum" hidden>
+   <div class="avg"><b id="avg">0.0</b><div class="st" id="avgst"></div><small id="tot"></small></div>
+   <div class="bars" id="bars"></div>
+  </div>
+  <div class="list" id="list"><div class="empty">Loading reviews…</div></div>
+  <div class="note" id="note"></div>
+ </section>
+
+ <footer>From 15<sup>th</sup> Oct to 20<sup>th</sup> Oct · Near Maniktala Mobile Tower · +91 9547268636</footer>
+</main>
+
+<script>
+(function(){
+ var LABELS=['','Not good','Could be better','Good','Really tasty!','Absolutely loved it!'];
+ var rating=0, reviews=[], db=null, busy=false, lastSent=0, LS='galimomo_reviews_v1';
+ var $=function(i){return document.getElementById(i)};
+
+ /* stars */
+ var starsEl=$('stars'), starBtns=[];
+ for(var i=1;i<=5;i++){(function(n){
+  var b=document.createElement('button');
+  b.type='button';b.className='star';b.textContent='★';
+  b.setAttribute('role','radio');b.setAttribute('aria-checked','false');
+  b.setAttribute('aria-label',n+' star'+(n>1?'s':''));
+  b.addEventListener('click',function(){setRating(n)});
+  b.addEventListener('mouseenter',function(){paint(n)});
+  b.addEventListener('mouseleave',function(){paint(rating)});
+  b.addEventListener('focus',function(){paint(Math.max(n,rating))});
+  b.addEventListener('blur',function(){paint(rating)});
+  b.addEventListener('keydown',function(e){
+   if(e.key==='ArrowRight'||e.key==='ArrowUp'){e.preventDefault();setRating(Math.min(5,(rating||0)+1),true)}
+   if(e.key==='ArrowLeft'||e.key==='ArrowDown'){e.preventDefault();setRating(Math.max(1,(rating||2)-1),true)}
+  });
+  starsEl.appendChild(b);starBtns.push(b);
+ })(i)}
+ function paint(n){starBtns.forEach(function(b,k){b.classList.toggle('on',k<n)});$('rtext').textContent=LABELS[n]||''}
+ function setRating(n,focus){
+  rating=n;$('rerr').textContent='';
+  starBtns.forEach(function(b,k){b.setAttribute('aria-checked',String(k+1===n));b.tabIndex=(k+1===n||(!n&&k===0))?0:-1});
+  paint(n);if(focus)starBtns[n-1].focus();
+ }
+ starBtns.forEach(function(b,k){b.tabIndex=k===0?0:-1});
+
+ $('cm').addEventListener('input',function(){$('cc').textContent=this.value.length});
+
+ /* helpers */
+ function stars(n){return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n)}
+ function when(ts){
+  var d=new Date(ts);if(isNaN(d))return '';
+  var s=Math.floor((Date.now()-d)/1000);
+  if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';
+  if(s<86400)return Math.floor(s/3600)+' hr ago';
+  return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+ }
+
+ /* render */
+ function render(){
+  var list=$('list');list.textContent='';
+  var n=reviews.length;
+  $('sum').hidden=!n;
+  if(!n){var e=document.createElement('div');e.className='empty';e.textContent='No reviews yet – be the first to rate! 🥟';list.appendChild(e);return}
+  var counts=[0,0,0,0,0,0],sum=0;
+  reviews.forEach(function(r){counts[r.rating]++;sum+=r.rating});
+  var avg=sum/n;
+  $('avg').textContent=avg.toFixed(1);
+  $('avgst').textContent=stars(Math.round(avg));
+  $('tot').textContent=n+' review'+(n>1?'s':'');
+  var bars=$('bars');bars.textContent='';
+  for(var s=5;s>=1;s--){
+   var row=document.createElement('div');row.className='bar';
+   var a=document.createElement('span');a.textContent=s+'★';
+   var t=document.createElement('div');t.className='track';
+   var f=document.createElement('div');f.className='fill';f.style.width=(counts[s]/n*100)+'%';t.appendChild(f);
+   var c=document.createElement('span');c.textContent=counts[s];
+   row.appendChild(a);row.appendChild(t);row.appendChild(c);bars.appendChild(row);
+  }
+  reviews.forEach(function(r){
+   var d=document.createElement('article');d.className='rev';
+   var top=document.createElement('div');top.className='top';
+   var nm=document.createElement('span');nm.className='nm';nm.textContent=r.name||'Anonymous';
+   var rs=document.createElement('span');rs.className='rs';rs.textContent=stars(r.rating);rs.setAttribute('aria-label',r.rating+' out of 5 stars');
+   top.appendChild(nm);top.appendChild(rs);d.appendChild(top);
+   if(r.comment){var p=document.createElement('p');p.textContent=r.comment;d.appendChild(p)}
+   var tm=document.createElement('time');tm.textContent=when(r.createdAt);d.appendChild(tm);
+   list.appendChild(d);
+  });
+ }
+
+ /* local fallback storage (only if shared database is unavailable) */
+ function lsLoad(){try{return JSON.parse(localStorage.getItem(LS)||'[]')}catch(e){return []}}
+ function lsSave(a){try{localStorage.setItem(LS,JSON.stringify(a))}catch(e){}}
+ function clean(r){
+  var x=Math.round(Number(r&&r.rating));
+  if(!(x>=1&&x<=5))return null;
+  return{rating:x,name:String(r.name||'').slice(0,40),comment:String(r.comment||'').slice(0,300),createdAt:Number(r.createdAt)||0};
+ }
+ function sortNew(a){return a.sort(function(x,y){return y.createdAt-x.createdAt})}
+
+ reviews=sortNew(lsLoad().map(clean).filter(Boolean));render();
+
+ /* shared database: Firebase Realtime Database over plain REST (no sign-in, no SDK) */
+ var DB_URL='https://gali-momo-default-rtdb.firebaseio.com/'; /* <-- paste your Firebase Realtime Database URL here, e.g. https://your-project-default-rtdb.firebaseio.com */
+ DB_URL=DB_URL.trim().replace(/\/+$/,'');
+ function fetchRemote(){
+  return fetch(DB_URL+'/reviews.json?orderBy=%22createdAt%22&limitToLast=200').then(function(r){
+   if(!r.ok)throw new Error('http');return r.json();
+  }).then(function(o){
+   reviews=sortNew(Object.keys(o||{}).map(function(k){return clean(o[k])}).filter(Boolean));
+   $('note').textContent='';render();
+  });
+ }
+ if(DB_URL){
+  reviews=[];
+  fetchRemote().catch(function(){$('list').innerHTML='';var e=document.createElement('div');e.className='empty';e.textContent='Could not load reviews right now. Please refresh in a moment.';$('list').appendChild(e)});
+  setInterval(function(){if(!document.hidden)fetchRemote().catch(function(){})},20000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)fetchRemote().catch(function(){})});
+ }else{
+  $('note').textContent='Demo mode: reviews are saved on this device only until the database URL is set.';
+ }
+
+ /* submit */
+ $('f').addEventListener('submit',async function(ev){
+  ev.preventDefault();if(busy)return;
+  $('msg').textContent='';
+  if(!rating){$('rerr').textContent='Please choose a star rating first.';starBtns[0].focus();return}
+  if(Date.now()-lastSent<4000){return}
+  var name=$('name').value.replace(/\s+/g,' ').trim().slice(0,40);
+  var comment=$('cm').value.trim().slice(0,300);
+  var rec={rating:rating,name:name||'Anonymous',comment:comment,createdAt:Date.now()};
+  busy=true;var btn=$('sub');btn.disabled=true;btn.textContent='Sending…';
+  var ok=true;
+  if(DB_URL){
+   try{
+    var res=await fetch(DB_URL+'/reviews.json',{method:'POST',body:JSON.stringify({rating:rec.rating,name:rec.name,comment:rec.comment,createdAt:{'.sv':'timestamp'}})});
+    if(!res.ok)throw new Error('http');
+    fetchRemote().catch(function(){});
+   }catch(e){ok=false}
+  }else{
+   var all=lsLoad();all.push(rec);lsSave(all);
+   reviews=sortNew(lsLoad().map(clean).filter(Boolean));render();
+  }
+  var m=document.createElement('div');m.className='ok';
+  if(ok){
+   lastSent=Date.now();
+   m.textContent='Thank you'+(rec.name!=='Anonymous'?', '+rec.name:'')+'! Your review has been added 🥟';
+   $('f').reset();$('cc').textContent='0';setRating(0);
+  }else{
+   m.style.borderColor='#ffb4a2';m.textContent='Sorry, we could not send your review. Please check your connection and try again – your text is still here.';
+  }
+  $('msg').appendChild(m);
+  btn.disabled=false;btn.textContent='Submit review';busy=false;
+  setTimeout(function(){m.remove()},6000);
+ });
+})();
+</script>
+</body>
+</html>
