@@ -58,6 +58,13 @@ button.primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .empty{text-align:center;opacity:.8;padding:18px 0 4px}
 .note{font-size:.78rem;opacity:.7;text-align:center;margin-top:14px}
 footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:var(--brown)}
+.logo{cursor:default;-webkit-user-select:none;user-select:none}
+.del{margin-top:8px;background:none;color:#ffb4a2;border:1.5px solid #ffb4a2;border-radius:30px;padding:4px 14px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.adm{position:fixed;inset:0;z-index:50;background:rgba(20,10,2,.8);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px))}
+.adm[hidden]{display:none}
+.admbox{position:relative;background:var(--card);border:2px solid var(--gold);border-radius:28px 12px 28px 12px;padding:22px 20px;width:100%;max-width:460px}
+.admbox .x{position:absolute;top:8px;right:12px;background:none;border:0;color:var(--text);font-size:2rem;line-height:1;cursor:pointer}
+#qrbox canvas{width:100%;max-width:300px;height:auto;display:block;margin:12px auto 0;border-radius:12px}
 @media(max-width:420px){.sum{grid-template-columns:1fr}.star{font-size:2.3rem}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -67,7 +74,7 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
 <main>
  <header>
   <h1>गली</h1>
-  <div class="momo">MOMO</div>
+  <div class="momo logo" id="logo">MOMO</div>
   <p class="sub">How was the authentic flavour?</p>
  </header>
 
@@ -104,6 +111,24 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
  <footer>From 15<sup>th</sup> Oct to 20<sup>th</sup> Oct · Near Maniktala Mobile Tower · +91 9547268636</footer>
 </main>
 
+<div class="adm" id="adm" hidden role="dialog" aria-modal="true" aria-label="Admin">
+ <div class="admbox">
+  <button class="x" id="aclose" type="button" aria-label="Close">&times;</button>
+  <h2>Admin</h2>
+  <form id="alogin" novalidate>
+   <label for="aemail">Email</label><input id="aemail" type="email" autocomplete="username">
+   <label for="apw">Password</label><input id="apw" type="password" autocomplete="current-password">
+   <button class="primary" type="submit" id="asign">Sign in</button>
+  </form>
+  <div id="aout" hidden><p>Signed in. Delete buttons now show on every review.</p><button class="primary" id="asignout" type="button">Sign out</button></div>
+  <div class="err" id="aerr" role="alert"></div>
+  <h2 style="margin-top:22px">QR code</h2>
+  <label for="qurl">Page link</label><input id="qurl" type="url" inputmode="url" autocomplete="off">
+  <div id="qrbox"></div>
+  <button class="primary" id="qdl" type="button">Download QR poster (PNG)</button>
+ </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
  var LABELS=['','Not good','Could be better','Good','Really tasty!','Absolutely loved it!'];
@@ -177,6 +202,7 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
    top.appendChild(nm);top.appendChild(rs);d.appendChild(top);
    if(r.comment){var p=document.createElement('p');p.textContent=r.comment;d.appendChild(p)}
    var tm=document.createElement('time');tm.textContent=when(r.createdAt);d.appendChild(tm);
+   if(adminToken&&r.id){var db=document.createElement('button');db.type='button';db.className='del';db.textContent='Delete';db.addEventListener('click',function(){delReview(r.id)});d.appendChild(db)}
    list.appendChild(d);
   });
  }
@@ -194,13 +220,13 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
  reviews=sortNew(lsLoad().map(clean).filter(Boolean));render();
 
  /* shared database: Firebase Realtime Database over plain REST (no sign-in, no SDK) */
- var DB_URL='https://gali-momo-default-rtdb.firebaseio.com/'; /* <-- paste your Firebase Realtime Database URL here, e.g. https://your-project-default-rtdb.firebaseio.com */
+ var DB_URL=''; /* <-- paste your Firebase Realtime Database URL here, e.g. https://your-project-default-rtdb.firebaseio.com */
  DB_URL=DB_URL.trim().replace(/\/+$/,'');
  function fetchRemote(){
   return fetch(DB_URL+'/reviews.json?orderBy=%22createdAt%22&limitToLast=200').then(function(r){
    if(!r.ok)throw new Error('http');return r.json();
   }).then(function(o){
-   reviews=sortNew(Object.keys(o||{}).map(function(k){return clean(o[k])}).filter(Boolean));
+   reviews=sortNew(Object.keys(o||{}).map(function(k){var c=clean(o[k]);if(c)c.id=k;return c}).filter(Boolean));
    $('note').textContent='';render();
   });
  }
@@ -212,6 +238,95 @@ footer{text-align:center;font-weight:700;margin-top:26px;font-size:.9rem;color:v
  }else{
   $('note').textContent='Demo mode: reviews are saved on this device only until the database URL is set.';
  }
+
+ /* hidden admin: 5 quick taps on the MOMO logo, or open the page with #admin on the end */
+ var API_KEY='AIzaSyDlRwjChIYZt1zMpr0rxBkfJ8Mtg83REmQ'; /* <-- paste your Firebase Web API key here (needed for admin sign-in only) */
+ API_KEY=API_KEY.trim();
+ var adminToken=null,clicks=0,clickTimer,expTimer;
+ function openAdmin(){$('adm').hidden=false;refreshAdmin();(adminToken?$('qurl'):$('aemail')).focus()}
+ function closeAdmin(){$('adm').hidden=true}
+ function refreshAdmin(){$('alogin').hidden=!!adminToken;$('aout').hidden=!adminToken;drawQR()}
+ function signOut(){adminToken=null;clearTimeout(expTimer);render();refreshAdmin()}
+ $('logo').addEventListener('click',function(){
+  clicks++;clearTimeout(clickTimer);clickTimer=setTimeout(function(){clicks=0},2500);
+  if(clicks>=5){clicks=0;openAdmin()}
+ });
+ if(location.hash==='#admin')openAdmin();
+ $('aclose').addEventListener('click',closeAdmin);
+ $('adm').addEventListener('click',function(e){if(e.target===this)closeAdmin()});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('adm').hidden)closeAdmin()});
+ $('asignout').addEventListener('click',signOut);
+ $('alogin').addEventListener('submit',function(ev){
+  ev.preventDefault();$('aerr').textContent='';
+  var email=$('aemail').value.trim(),pw=$('apw').value;
+  if(!DB_URL||!API_KEY){$('aerr').textContent='Set DB_URL and API_KEY in index.html first.';return}
+  if(!email||!pw){$('aerr').textContent='Enter your admin email and password.';return}
+  var b=$('asign');b.disabled=true;b.textContent='Signing in…';
+  fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+encodeURIComponent(API_KEY),{
+   method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,returnSecureToken:true})
+  }).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j}})}).then(function(x){
+   if(!x.ok||!x.j.idToken)throw new Error('auth');
+   adminToken=x.j.idToken;$('apw').value='';
+   clearTimeout(expTimer);expTimer=setTimeout(signOut,55*60*1000);
+   render();refreshAdmin();
+  }).catch(function(){$('aerr').textContent='Sign-in failed. Check the email, password and API key.'})
+  .then(function(){b.disabled=false;b.textContent='Sign in'});
+ });
+ function delReview(id){
+  if(!adminToken||!confirm('Delete this review permanently?'))return;
+  fetch(DB_URL+'/reviews/'+encodeURIComponent(id)+'.json?auth='+encodeURIComponent(adminToken),{method:'DELETE'}).then(function(r){
+   if(r.status===401||r.status===403){signOut();openAdmin();$('aerr').textContent='Session expired or not allowed. Please sign in again.';return}
+   if(!r.ok)throw new Error('http');
+   return fetchRemote();
+  }).catch(function(){alert('Could not delete the review. Please try again.')});
+ }
+
+ /* themed QR poster */
+ var qrTimer,qrCanvasEl=null;
+ var defUrl=(location.protocol==='file:')?'':location.origin+location.pathname;
+ $('qurl').value=defUrl;$('qurl').placeholder='https://yourname.github.io/your-repo/';
+ $('qurl').addEventListener('input',function(){clearTimeout(qrTimer);qrTimer=setTimeout(drawQR,300)});
+ function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+ function drawQR(){
+  var box=$('qrbox'),url=$('qurl').value.trim();box.textContent='';qrCanvasEl=null;
+  if(typeof qrcode==='undefined'){box.textContent='QR library could not load. Check your internet connection.';return}
+  if(!/^https?:\/\/\S+$/i.test(url)){var h=document.createElement('div');h.className='note';h.textContent='Type your full page link above to create the QR.';box.appendChild(h);return}
+  var qr;try{qr=qrcode(0,'M');qr.addData(url);qr.make()}catch(e){box.textContent='That link is too long for a QR code.';return}
+  var fonts=['150px "Yatra One"','90px "Archivo Black"','60px "Kaushan Script"','700 36px Montserrat'];
+  Promise.all(fonts.map(function(f){return document.fonts?document.fonts.load(f,'गलीMOMO'):0})).catch(function(){}).then(function(){
+   if($('qurl').value.trim()!==url)return;
+   var n=qr.getModuleCount(),cell=Math.floor(560/(n+8)),size=cell*(n+8),W=900,H=1280;
+   var cv=document.createElement('canvas');cv.width=W;cv.height=H;var c=cv.getContext('2d');
+   c.fillStyle='#472a11';c.fillRect(0,0,W,H);
+   c.fillStyle='#dca843';rr(c,0,0,W,H,0);
+   c.lineWidth=12;c.strokeStyle='#dca843';rr(c,26,26,W-52,H-52,60);c.stroke();
+   c.textAlign='center';c.fillStyle='#c0c9ca';
+   c.shadowColor='rgba(0,0,0,.35)';c.shadowOffsetX=5;c.shadowOffsetY=5;
+   c.font='150px "Yatra One",serif';c.fillText('गली',W/2,230);
+   c.font='90px "Archivo Black",sans-serif';c.fillText('MOMO',W/2,340);
+   c.shadowColor='transparent';
+   var x0=(W-size)/2,y0=400;
+   c.fillStyle='#dca843';rr(c,x0-18,y0-18,size+36,size+36,50);c.fill();
+   c.fillStyle='#c0c9ca';rr(c,x0,y0,size,size,36);c.fill();
+   c.fillStyle='#472a11';
+   for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(qr.isDark(r,k))c.fillRect(x0+(k+4)*cell,y0+(r+4)*cell,cell,cell);
+   var yb=y0+size+130;
+   c.fillStyle='#dca843';c.font='64px "Kaushan Script",cursive';c.fillText('Scan & rate our momos',W/2,yb);
+   c.fillStyle='#c0c9ca';c.font='700 36px Montserrat,sans-serif';c.fillText('★ ★ ★ ★ ★',W/2,yb+70);
+   var short=url.replace(/^https?:\/\//i,'');if(short.length>48)short=short.slice(0,45)+'…';
+   c.font='500 26px Montserrat,sans-serif';c.globalAlpha=.75;c.fillText(short,W/2,H-80);c.globalAlpha=1;
+   $('qrbox').textContent='';$('qrbox').appendChild(cv);qrCanvasEl=cv;
+  });
+ }
+ $('qdl').addEventListener('click',function(){
+  if(!qrCanvasEl){$('aerr').textContent='Type a valid page link first.';return}
+  $('aerr').textContent='';
+  qrCanvasEl.toBlob(function(b){
+   if(!b){$('aerr').textContent='Could not create the image. Try again.';return}
+   var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='gali-momo-review-qr.png';
+   document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  },'image/png');
+ });
 
  /* submit */
  $('f').addEventListener('submit',async function(ev){
